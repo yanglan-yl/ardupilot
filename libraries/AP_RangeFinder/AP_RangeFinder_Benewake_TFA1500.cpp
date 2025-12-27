@@ -78,7 +78,6 @@ bool AP_RangeFinder_Benewake_TFA1500::get_reading(float &reading_m)
     {
         // return average distance of readings
         reading_m = (sum_cm * 0.01f) / count;
-        hal.console->printf("read :%fm\n", reading_m);
         return true;
     }
 
@@ -87,7 +86,6 @@ bool AP_RangeFinder_Benewake_TFA1500::get_reading(float &reading_m)
         // if only out of range readings return larger of
         // driver defined maximum range for the model and user defined max range + 1m
         reading_m = MAX(model_dist_max_cm() * 0.01, max_distance());
-        hal.console->printf("outof range%fm\n", reading_m);
         return true;
     }
     uart->write(TFA1500_CMD_STOP, sizeof(TFA1500_CMD_STOP));
