@@ -9,9 +9,9 @@
 extern const AP_HAL::HAL &hal;
 #define TFA1500_FRAME_HEADER 0x5C
 #define TFA1500_FRAME_LENGTH 5
-#define TFA1500_DIST_MAX_CM 130000                                                     // todo:具体数值待确认
-static uint8_t TFA1500_CMD_START[] = {0x55, 0xAA, 0xCB, 0xCC, 0xCC, 0xCC, 0xCC, 0xFB}; // 启动命令
-static uint8_t TFA1500_CMD_STOP[] = {0x55, 0xAA, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xFC};  // 停止命令
+#define TFA1500_DIST_MAX_CM 130000                                     
+static uint8_t TFA1500_CMD_START[] = {0x55, 0xAA, 0xCB, 0xCC, 0xCC, 0xCC, 0xCC, 0xFB}; 
+static uint8_t TFA1500_CMD_STOP[] = {0x55, 0xAA, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xFC};  
 
 bool AP_RangeFinder_Benewake_TFA1500::get_reading(float &reading_m)
 {
@@ -20,11 +20,10 @@ bool AP_RangeFinder_Benewake_TFA1500::get_reading(float &reading_m)
         return false;
     }
     uart->write(TFA1500_CMD_START, sizeof(TFA1500_CMD_START));
-    hal.console->printf("read start\n");
     float sum_cm = 0;
     uint16_t count = 0;
     uint16_t count_out_of_range = 0;
-    TF_linebuf_len = 0;
+    tf_linebuf_len = 0;
     // read any available lines from the lidar
     for (auto j = 0; j < 8192; j++)
     {
@@ -33,31 +32,30 @@ bool AP_RangeFinder_Benewake_TFA1500::get_reading(float &reading_m)
         {
             break;
         }
-        if (TF_linebuf_len == 0)
+        if (tf_linebuf_len == 0)
         {
             if (c == TFA1500_FRAME_HEADER)
             {
-                TF_linebuf[TF_linebuf_len++] = c;
+                tf_linebuf[tf_linebuf_len++] = c;
             }
         }
         else
         {
             // add character to buffer
-            TF_linebuf[TF_linebuf_len++] = c;
-            if (TF_linebuf_len == TFA1500_FRAME_LENGTH)
+            tf_linebuf[tf_linebuf_len++] = c;
+            if (tf_linebuf_len == TFA1500_FRAME_LENGTH)
             {
                 // calculate checksum
                 uint8_t checksum = 0;
-                // 计算校验和,校验字节数已确认
                 for (uint8_t i = 1; i < TFA1500_FRAME_LENGTH - 1; i++)
                 {
-                    checksum += TF_linebuf[i];
+                    checksum += tf_linebuf[i];
                 }
                 checksum = ~checksum;
-                if (checksum == TF_linebuf[TFA1500_FRAME_LENGTH - 1])
+                if (checksum == tf_linebuf[TFA1500_FRAME_LENGTH - 1])
                 {
                     // calculate distance
-                    uint32_t dist = (TF_linebuf[3] << 16) | (TF_linebuf[2] << 8) | TF_linebuf[1];
+                    uint32_t dist = (tf_linebuf[3] << 16) | (tf_linebuf[2] << 8) | tf_linebuf[1];
                     //  hal.console->printf("read dist%dcm ",dist);
                     if (dist >= TFA1500_DIST_MAX_CM || dist == uint32_t(model_dist_max_cm()))
                     {
@@ -71,7 +69,7 @@ bool AP_RangeFinder_Benewake_TFA1500::get_reading(float &reading_m)
                     }
                 }
                 // clear buffer
-                TF_linebuf_len = 0;
+                tf_linebuf_len = 0;
             }
         }
     }

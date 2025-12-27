@@ -21,8 +21,8 @@ protected:
 private:
     using AP_RangeFinder_Benewake::AP_RangeFinder_Benewake;
     bool get_reading(float &reading_m) override;
-    uint8_t TF_linebuf[5];
-    uint8_t TF_linebuf_len;
+    uint8_t tf_linebuf[5];
+    uint8_t tf_linebuf_len;
 };
 
 #endif // AP_RANGEFINDER_BENEWAKE_TFA1500_ENABLED
