@@ -15,6 +15,9 @@ public:
     {
         return NEW_NOTHROW AP_RangeFinder_Benewake_TFA1500(_state, _params);
     }
+    void init_serial(uint8_t serial_instance) override;
+    ~AP_RangeFinder_Benewake_TFA1500() override;
+
 protected:
     float model_dist_max_cm() const override { return 4194303; }
 

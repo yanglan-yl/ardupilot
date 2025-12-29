@@ -13,13 +13,34 @@ extern const AP_HAL::HAL &hal;
 static uint8_t TFA1500_CMD_START[] = {0x55, 0xAA, 0xCB, 0xCC, 0xCC, 0xCC, 0xCC, 0xFB}; 
 static uint8_t TFA1500_CMD_STOP[] = {0x55, 0xAA, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xFC};  
 
+void AP_RangeFinder_Benewake_TFA1500::init_serial(uint8_t serial_instance)
+{
+    AP_RangeFinder_Backend_Serial::init_serial(serial_instance);
+    // give the sensor time to start up
+    hal.scheduler->delay(100);
+    hal.console->printf("TFA1500 sensor started \n");
+    if (uart == nullptr)
+    {
+        return ;
+    }
+    uart->write(TFA1500_CMD_START, sizeof(TFA1500_CMD_START));
+    hal.console->printf("TFA1500 sensor started ok\n");
+}
+AP_RangeFinder_Benewake_TFA1500::~AP_RangeFinder_Benewake_TFA1500()
+{
+    if (uart != nullptr)
+    {
+        uart->write(TFA1500_CMD_STOP, sizeof(TFA1500_CMD_STOP));
+        hal.console->printf("TFA1500 sensor stopped\n");
+    }
+}
+
 bool AP_RangeFinder_Benewake_TFA1500::get_reading(float &reading_m)
 {
     if (uart == nullptr)
     {
         return false;
     }
-    uart->write(TFA1500_CMD_START, sizeof(TFA1500_CMD_START));
     float sum_cm = 0;
     uint16_t count = 0;
     uint16_t count_out_of_range = 0;
@@ -88,7 +109,6 @@ bool AP_RangeFinder_Benewake_TFA1500::get_reading(float &reading_m)
         reading_m = MAX(model_dist_max_cm() * 0.01, max_distance());
         return true;
     }
-    uart->write(TFA1500_CMD_STOP, sizeof(TFA1500_CMD_STOP));
     // no readings so return false
     return false;
 }
