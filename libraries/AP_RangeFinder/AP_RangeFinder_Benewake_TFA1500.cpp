@@ -18,7 +18,6 @@ void AP_RangeFinder_Benewake_TFA1500::init_serial(uint8_t serial_instance)
     AP_RangeFinder_Backend_Serial::init_serial(serial_instance);
     // give the sensor time to start up
     hal.scheduler->delay(100);
-    hal.console->printf("TFA1500 sensor started \n");
     if (uart == nullptr)
     {
         return ;
@@ -31,7 +30,6 @@ AP_RangeFinder_Benewake_TFA1500::~AP_RangeFinder_Benewake_TFA1500()
     if (uart != nullptr)
     {
         uart->write(TFA1500_CMD_STOP, sizeof(TFA1500_CMD_STOP));
-        hal.console->printf("TFA1500 sensor stopped\n");
     }
 }
 
